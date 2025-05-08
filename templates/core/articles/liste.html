@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+
+{% block title %}Articles - Gestio Sotech{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h2">Gestion des articles</h1>
+        <a href="{% url 'creer_article' %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Nouvel article
+        </a>
+    </div>
+
+    {% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Nom</th>
+                            <th>Description</th>
+                            <th>Catégorie</th>
+                            <th>Prix d'achat</th>
+                            <th>Prix de vente</th>
+                            <th>N° Série</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for article in articles %}
+                        <tr>
+                            <td>{{ article.nom }}</td>
+                            <td>{{ article.description|truncatechars:50 }}</td>
+                            <td>{{ article.categorie.nom }}</td>
+                            <td>{{ article.prix_achat }} €</td>
+                            <td>{{ article.prix_vente }} €</td>
+                            <td>
+                                <button type="button" class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#serieModal{{ article.id }}">
+                                    <i class="fas fa-list"></i> Voir ({{ article.get_numeros_serie.count }})
+                                </button>
+                                
+                                <!-- Modal pour les numéros de série -->
+                                <div class="modal fade" id="serieModal{{ article.id }}" tabindex="-1">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">Numéros de série - {{ article.nom }}</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                {% if article.get_numeros_serie %}
+                                                    <div class="table-responsive">
+                                                        <table class="table table-sm">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th>Numéro de série</th>
+                                                                    <th>Date d'acquisition</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                {% for serie in article.get_numeros_serie %}
+                                                                <tr>
+                                                                    <td>{{ serie.numero_serie }}</td>
+                                                                    <td>{{ serie.date_acquisition|date:"d/m/Y" }}</td>
+                                                                </tr>
+                                                                {% endfor %}
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                {% else %}
+                                                    <p class="text-muted">Aucun numéro de série enregistré pour cet article.</p>
+                                                {% endif %}
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <a href="{% url 'modifier_article' article.pk %}" class="btn btn-sm btn-info">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="{% url 'supprimer_article' article.pk %}" class="btn btn-sm btn-danger">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center">Aucun article trouvé</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

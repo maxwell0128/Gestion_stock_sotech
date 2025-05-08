@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% block title %}Nouveau rôle - Gestio Sotech{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="h4 mb-0">Créer un nouveau rôle</h2>
+                </div>
+                <div class="card-body">
+                    <form method="post" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="nom" class="form-label">Nom du rôle</label>
+                            <input type="text" class="form-control" id="nom" name="nom" required>
+                            <div class="invalid-feedback">
+                                Veuillez entrer un nom de rôle.
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Permissions</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="permissions" value="view_users" id="view_users">
+                                <label class="form-check-label" for="view_users">
+                                    Voir les utilisateurs
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="permissions" value="create_users" id="create_users">
+                                <label class="form-check-label" for="create_users">
+                                    Créer des utilisateurs
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="permissions" value="edit_users" id="edit_users">
+                                <label class="form-check-label" for="edit_users">
+                                    Modifier les utilisateurs
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="permissions" value="delete_users" id="delete_users">
+                                <label class="form-check-label" for="delete_users">
+                                    Supprimer les utilisateurs
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">Créer le rôle</button>
+                            <a href="{% url 'liste_roles' %}" class="btn btn-secondary">Annuler</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

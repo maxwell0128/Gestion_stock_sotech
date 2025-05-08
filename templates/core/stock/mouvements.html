@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block title %}Mouvements de stock - Gestio Sotech{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h2">Mouvements de stock</h1>
+    </div>
+
+    {% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Article</th>
+                            <th>Type</th>
+                            <th>Quantité</th>
+                            <th>Motif</th>
+                            <th>Utilisateur</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for mouvement in mouvements %}
+                        <tr>
+                            <td>{{ mouvement.date|date:"d/m/Y H:i" }}</td>
+                            <td>{{ mouvement.article.nom }}</td>
+                            <td>
+                                {% if mouvement.type_mouvement == 'ENTREE' %}
+                                <span class="badge bg-success">Entrée</span>
+                                {% elif mouvement.type_mouvement == 'SORTIE' %}
+                                <span class="badge bg-warning">Sortie</span>
+                                {% else %}
+                                <span class="badge bg-info">Correction</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ mouvement.quantite }}</td>
+                            <td>{{ mouvement.motif }}</td>
+                            <td>{{ mouvement.utilisateur.username }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center">Aucun mouvement de stock enregistré</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

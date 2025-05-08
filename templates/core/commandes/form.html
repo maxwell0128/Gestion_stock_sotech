@@ -1,0 +1,509 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ titre }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-control, .form-select {
+        border-radius: 0.35rem;
+        padding: 0.5rem 0.75rem;
+        border: 1px solid #d1d3e2;
+        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: #4e73df;
+        box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
+    }
+
+    .card {
+        border: none;
+        box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+        border-radius: 0.35rem;
+    }
+
+    .formset-form {
+        transition: all 0.3s ease;
+    }
+
+    .formset-form:hover {
+        box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.25);
+    }
+
+    .btn {
+        border-radius: 0.35rem;
+        padding: 0.5rem 1rem;
+        font-weight: 500;
+        transition: all 0.2s ease-in-out;
+    }
+
+    .btn-primary {
+        background-color: #4e73df;
+        border-color: #4e73df;
+    }
+
+    .btn-primary:hover {
+        background-color: #2e59d9;
+        border-color: #2653d4;
+    }
+
+    .btn-success {
+        background-color: #1cc88a;
+        border-color: #1cc88a;
+    }
+
+    .btn-success:hover {
+        background-color: #17a673;
+        border-color: #169b6b;
+    }
+
+    .btn-danger {
+        background-color: #e74a3b;
+        border-color: #e74a3b;
+    }
+
+    .btn-danger:hover {
+        background-color: #e02d1b;
+        border-color: #d52a1a;
+    }
+
+    .btn-secondary {
+        background-color: #858796;
+        border-color: #858796;
+    }
+
+    .btn-secondary:hover {
+        background-color: #717384;
+        border-color: #6b6d7d;
+    }
+
+    .ligne-total {
+        background-color: #f8f9fc;
+        font-weight: 600;
+    }
+
+    .totals-card {
+        background-color: #f8f9fc;
+        border-left: 4px solid #4e73df;
+    }
+
+    .totals-card .card-body {
+        padding: 1.25rem;
+    }
+
+    .totals-card .row {
+        margin-bottom: 0.5rem;
+    }
+
+    .totals-card .row:last-child {
+        margin-bottom: 0;
+        padding-top: 0.5rem;
+        border-top: 1px solid #e3e6f0;
+    }
+
+    .page-header {
+        padding-bottom: 1rem;
+        margin-bottom: 2rem;
+        border-bottom: 1px solid #e3e6f0;
+    }
+
+    .form-group label {
+        font-weight: 500;
+        color: #5a5c69;
+        margin-bottom: 0.5rem;
+    }
+
+    .invalid-feedback {
+        font-size: 0.875rem;
+    }
+
+    #ajouter-ligne {
+        margin-top: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .supprimer-ligne {
+        padding: 0.5rem;
+    }
+
+    .supprimer-ligne i {
+        font-size: 0.875rem;
+    }
+
+    .fournisseur-info {
+        background-color: #f8f9fc;
+        border-radius: 0.35rem;
+        padding: 1rem;
+        margin-top: 0.5rem;
+        border-left: 4px solid #4e73df;
+    }
+
+    .fournisseur-info p {
+        margin-bottom: 0.5rem;
+        color: #5a5c69;
+    }
+
+    .fournisseur-info p:last-child {
+        margin-bottom: 0;
+    }
+
+    .fournisseur-info .badge {
+        font-size: 0.875rem;
+        padding: 0.35rem 0.65rem;
+    }
+
+    .select2-container--default .select2-selection--single {
+        border-radius: 0.35rem;
+        border: 1px solid #d1d3e2;
+        height: calc(1.5em + 0.75rem + 2px);
+        padding: 0.375rem 0.75rem;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: 1.5;
+        padding-left: 0;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: calc(1.5em + 0.75rem + 2px);
+    }
+
+    input[readonly] {
+        background-color: #f8f9fa !important;
+        color: #6c757d;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="page-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <h1 class="h3 mb-0 text-gray-800">{{ titre }}</h1>
+            <a href="{% url 'liste_commandes' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Retour à la liste
+            </a>
+        </div>
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-body">
+            <form method="post" id="commande-form">
+                {% csrf_token %}
+                
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="{{ form.fournisseur.id_for_label }}">Fournisseur</label>
+                            {{ form.fournisseur }}
+                            {% if form.fournisseur.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.fournisseur.errors }}
+                            </div>
+                            {% endif %}
+                            <div class="fournisseur-info" id="fournisseur-info" style="display: none;">
+                                <p><strong>Informations du fournisseur :</strong></p>
+                                <p>Nombre de commandes : <span class="badge bg-primary" id="nb-commandes">0</span></p>
+                                <p>Dernière commande : <span id="derniere-commande">-</span></p>
+                                <p>Total des commandes : <span id="total-commandes">0.00 €</span></p>
+                                
+                                <div class="mt-3">
+                                    <h6 class="font-weight-bold">Commandes récentes :</h6>
+                                    <div class="table-responsive">
+                                        <table class="table table-sm table-bordered" id="commandes-recentes">
+                                            <thead>
+                                                <tr>
+                                                    <th>Date</th>
+                                                    <th>N° Commande</th>
+                                                    <th>Statut</th>
+                                                    <th class="text-end">Montant</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="{{ form.date_livraison_prevue.id_for_label }}">Date de livraison prévue</label>
+                            {{ form.date_livraison_prevue }}
+                            {% if form.date_livraison_prevue.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.date_livraison_prevue.errors }}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group mb-4">
+                    <label for="{{ form.notes.id_for_label }}">Notes</label>
+                    {{ form.notes }}
+                    {% if form.notes.errors %}
+                    <div class="invalid-feedback d-block">
+                        {{ form.notes.errors }}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary">Articles commandés</h6>
+                    </div>
+                    <div class="card-body">
+                        {{ formset.management_form }}
+                        <div id="formset-container">
+                            {% for form in formset %}
+                            <div class="formset-form card mb-3">
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label>Article</label>
+                                                {{ form.article }}
+                                                {% if form.article.errors %}
+                                                <div class="invalid-feedback d-block">
+                                                    {{ form.article.errors }}
+                                                </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <div class="form-group">
+                                                <label>Quantité</label>
+                                                {{ form.quantite }}
+                                                {% if form.quantite.errors %}
+                                                <div class="invalid-feedback d-block">
+                                                    {{ form.quantite.errors }}
+                                                </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="form-group">
+                                                <label>Total</label>
+                                                <input type="text" class="form-control ligne-total" readonly>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-1">
+                                            <div class="form-group">
+                                                <label>&nbsp;</label>
+                                                <button type="button" class="btn btn-danger btn-block supprimer-ligne">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+
+                        <button type="button" class="btn btn-success" id="ajouter-ligne">
+                            <i class="fas fa-plus"></i> Ajouter une ligne
+                        </button>
+                    </div>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-md-6 offset-md-6">
+                        <div class="card totals-card">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-6">Total HT:</div>
+                                    <div class="col-6 text-right" id="total-ht">0.00 €</div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-6">TVA (20%):</div>
+                                    <div class="col-6 text-right" id="total-tva">0.00 €</div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-6"><strong>Total TTC:</strong></div>
+                                    <div class="col-6 text-right"><strong id="total-ttc">0.00 €</strong></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-right">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Enregistrer la commande
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        // Fonction pour calculer le total d'une ligne
+        function calculerTotalLigne(ligne) {
+            var quantite = parseFloat(ligne.find('[name$="-quantite"]').val()) || 0;
+            var prix = parseFloat(ligne.find('[name$="-prix_unitaire"]').val()) || 0;
+            var total = quantite * prix;
+            ligne.find('.ligne-total').val(total.toFixed(2) + ' €');
+            return total;
+        }
+
+        // Fonction pour calculer les totaux généraux
+        function calculerTotaux() {
+            var totalHT = 0;
+            $('.formset-form').each(function() {
+                totalHT += calculerTotalLigne($(this));
+            });
+            var tva = totalHT * 0.2;
+            var totalTTC = totalHT + tva;
+
+            $('#total-ht').text(totalHT.toFixed(2) + ' €');
+            $('#total-tva').text(tva.toFixed(2) + ' €');
+            $('#total-ttc').text(totalTTC.toFixed(2) + ' €');
+        }
+
+        // Fonction pour charger le prix unitaire d'un article
+        function chargerPrixUnitaire(selectElement) {
+            var articleId = $(selectElement).val();
+            var ligne = $(selectElement).closest('.formset-form');
+            var prixUnitaireInput = ligne.find('[name$="-prix_unitaire"]');
+            
+            if (articleId) {
+                var prixAchat = $(selectElement).data('prix-achat-' + articleId);
+                if (prixAchat) {
+                    prixUnitaireInput.val(prixAchat);
+                    calculerTotaux();
+                }
+            } else {
+                prixUnitaireInput.val('');
+                calculerTotaux();
+            }
+        }
+
+        // Ajouter une nouvelle ligne
+        $('#ajouter-ligne').click(function() {
+            var formCount = $('#id_lignes-TOTAL_FORMS');
+            var count = parseInt(formCount.val());
+            var newForm = $('.formset-form:first').clone(true);
+            
+            // Mettre à jour les IDs et names
+            newForm.find(':input').each(function() {
+                var name = $(this).attr('name').replace('-0-', '-' + count + '-');
+                var id = 'id_' + name;
+                $(this).attr({'name': name, 'id': id}).val('');
+            });
+            
+            // Vider les champs
+            newForm.find('input[type="text"], input[type="number"]').val('');
+            newForm.find('select').val('');
+            
+            $('#formset-container').append(newForm);
+            formCount.val(count + 1);
+
+            // Réinitialiser Select2 pour le nouveau formulaire
+            newForm.find('select').select2({
+                theme: 'bootstrap4',
+                placeholder: 'Sélectionnez un article'
+            });
+        });
+
+        // Supprimer une ligne
+        $('.supprimer-ligne').click(function() {
+            if ($('.formset-form').length > 1) {
+                $(this).closest('.formset-form').remove();
+                calculerTotaux();
+            }
+        });
+
+        // Recalculer les totaux quand les valeurs changent
+        $(document).on('change', '[name$="-quantite"], [name$="-prix_unitaire"]', function() {
+            calculerTotaux();
+        });
+
+        // Charger le prix unitaire quand un article est sélectionné
+        $(document).on('change', '[name$="-article"]', function() {
+            chargerPrixUnitaire(this);
+        });
+
+        // Initialiser Select2 pour les champs de sélection
+        $('select').select2({
+            theme: 'bootstrap4',
+            placeholder: 'Sélectionnez une option'
+        });
+
+        // Charger les prix unitaires pour les articles déjà sélectionnés
+        $('[name$="-article"]').each(function() {
+            if ($(this).val()) {
+                chargerPrixUnitaire(this);
+            }
+        });
+
+        // Gestion des informations du fournisseur
+        $('#id_fournisseur').on('change', function() {
+            var fournisseurId = $(this).val();
+            if (fournisseurId) {
+                $.get('/api/fournisseur/' + fournisseurId + '/stats/', function(data) {
+                    $('#nb-commandes').text(data.nb_commandes);
+                    $('#derniere-commande').text(data.derniere_commande || '-');
+                    $('#total-commandes').text(data.total_commandes + ' €');
+                    
+                    // Mise à jour du tableau des commandes récentes
+                    var tbody = $('#commandes-recentes tbody');
+                    tbody.empty();
+                    
+                    data.commandes_recentes.forEach(function(commande) {
+                        var statutClass = '';
+                        switch(commande.statut) {
+                            case 'en_attente':
+                                statutClass = 'bg-warning';
+                                break;
+                            case 'confirmee':
+                                statutClass = 'bg-info';
+                                break;
+                            case 'en_cours':
+                                statutClass = 'bg-primary';
+                                break;
+                            case 'livree':
+                                statutClass = 'bg-success';
+                                break;
+                            case 'annulee':
+                                statutClass = 'bg-danger';
+                                break;
+                        }
+                        
+                        tbody.append(`
+                            <tr>
+                                <td>${commande.date_commande}</td>
+                                <td>
+                                    <a href="/commandes/${commande.id}/" class="text-primary">
+                                        #${commande.id}
+                                    </a>
+                                </td>
+                                <td><span class="badge ${statutClass}">${commande.statut_display}</span></td>
+                                <td class="text-end">${commande.total_ttc} €</td>
+                            </tr>
+                        `);
+                    });
+                    
+                    $('#fournisseur-info').show();
+                });
+            } else {
+                $('#fournisseur-info').hide();
+            }
+        });
+
+        // Initialiser Select2 pour le champ fournisseur
+        $('#id_fournisseur').select2({
+            theme: 'bootstrap4',
+            placeholder: 'Sélectionnez un fournisseur',
+            allowClear: true
+        });
+    });
+</script>
+{% endblock %} 

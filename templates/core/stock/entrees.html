@@ -1,0 +1,227 @@
+{% extends 'base.html' %}
+
+{% block title %}Entrées de stock - Gestio Sotech{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h2">Entrées de stock</h1>
+        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#nouvelleEntreeModal">
+            <i class="fas fa-plus"></i> Nouvelle entrée
+        </button>
+    </div>
+
+    {% if messages %}
+    <div class="messages mb-4">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Article</th>
+                            <th>Quantité</th>
+                            <th>Stock après</th>
+                            <th>Numéros de série</th>
+                            <th>Motif</th>
+                            <th>Utilisateur</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for entree in entrees %}
+                        <tr>
+                            <td>{{ entree.date|date:"d/m/Y H:i" }}</td>
+                            <td>{{ entree.article.nom }}</td>
+                            <td>{{ entree.quantite }}</td>
+                            <td>{{ entree.article.quantite_stock }}</td>
+                            <td>
+                                <button type="button" class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#serieModal{{ entree.id }}">
+                                    <i class="fas fa-list"></i> Voir les numéros
+                                </button>
+                                
+                                <!-- Modal pour les numéros de série -->
+                                <div class="modal fade" id="serieModal{{ entree.id }}" tabindex="-1">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">Numéros de série - {{ entree.article.nom }}</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <div class="table-responsive">
+                                                    <table class="table table-sm">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Numéro de série</th>
+                                                                <th>Date d'acquisition</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {% for serie in entree.articlenumeroserie_set.all %}
+                                                            <tr>
+                                                                <td>{{ serie.numero_serie }}</td>
+                                                                <td>{{ serie.date_acquisition|date:"d/m/Y" }}</td>
+                                                            </tr>
+                                                            {% empty %}
+                                                            <tr>
+                                                                <td colspan="2" class="text-center">Aucun numéro de série enregistré</td>
+                                                            </tr>
+                                                            {% endfor %}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>{{ entree.motif }}</td>
+                            <td>{{ entree.utilisateur.username }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center">Aucune entrée de stock enregistrée</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="nouvelleEntreeModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Nouvelle entrée de stock</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="{% url 'entrees_stock' %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="article" class="form-label">Article</label>
+                        <select class="form-select" id="article" name="article" required>
+                            <option value="">Sélectionner un article</option>
+                            {% for article in articles %}
+                            <option value="{{ article.id }}">{{ article.nom }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="quantite" class="form-label">Quantité</label>
+                        <input type="number" class="form-control" id="quantite" name="quantite" min="1" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="motif" class="form-label">Motif</label>
+                        <textarea class="form-control" id="motif" name="motif" rows="3" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-success">Enregistrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const container = document.getElementById('numeros-serie-container');
+    const addButton = document.getElementById('add-numero-serie');
+    const totalForms = document.getElementById('id_form-TOTAL_FORMS');
+    const quantiteInput = document.getElementById('quantite');
+    
+    // Fonction pour mettre à jour les indices des formulaires
+    function updateFormIndexes() {
+        const forms = container.getElementsByClassName('numero-serie-form');
+        for (let i = 0; i < forms.length; i++) {
+            const form = forms[i];
+            form.querySelectorAll('input').forEach(input => {
+                input.name = input.name.replace(/-\d+-/, `-${i}-`);
+                input.id = input.id.replace(/-\d+-/, `-${i}-`);
+            });
+        }
+        totalForms.value = forms.length;
+    }
+    
+    // Mettre à jour le nombre de champs de numéros de série en fonction de la quantité
+    quantiteInput.addEventListener('change', function() {
+        const quantite = parseInt(this.value) || 0;
+        const currentForms = container.getElementsByClassName('numero-serie-form').length;
+        
+        if (quantite > currentForms) {
+            // Ajouter des formulaires
+            for (let i = currentForms; i < quantite; i++) {
+                const template = container.getElementsByClassName('numero-serie-form')[0].cloneNode(true);
+                template.querySelectorAll('input').forEach(input => {
+                    input.value = '';
+                    input.name = input.name.replace(/-\d+-/, `-${i}-`);
+                    input.id = input.id.replace(/-\d+-/, `-${i}-`);
+                });
+                container.appendChild(template);
+            }
+        } else if (quantite < currentForms) {
+            // Supprimer des formulaires
+            for (let i = currentForms; i > quantite; i--) {
+                container.removeChild(container.lastChild);
+            }
+        }
+        updateFormIndexes();
+    });
+    
+    // Supprimer un formulaire
+    container.addEventListener('click', function(e) {
+        if (e.target.classList.contains('remove-form') || e.target.parentElement.classList.contains('remove-form')) {
+            const form = e.target.closest('.numero-serie-form');
+            const currentForms = container.getElementsByClassName('numero-serie-form').length;
+            const quantite = parseInt(quantiteInput.value) || 0;
+            
+            if (currentForms > quantite) {
+                form.remove();
+                updateFormIndexes();
+            } else {
+                alert('Le nombre de numéros de série doit correspondre à la quantité entrée.');
+            }
+        }
+    });
+    
+    // Ajouter un formulaire
+    addButton.addEventListener('click', function() {
+        const currentForms = container.getElementsByClassName('numero-serie-form').length;
+        const quantite = parseInt(quantiteInput.value) || 0;
+        
+        if (currentForms < quantite) {
+            const template = container.getElementsByClassName('numero-serie-form')[0].cloneNode(true);
+            template.querySelectorAll('input').forEach(input => {
+                input.value = '';
+                input.name = input.name.replace(/-\d+-/, `-${currentForms}-`);
+                input.id = input.id.replace(/-\d+-/, `-${currentForms}-`);
+            });
+            container.appendChild(template);
+            updateFormIndexes();
+        } else {
+            alert('Le nombre de numéros de série ne peut pas dépasser la quantité entrée.');
+        }
+    });
+});
+</script>
+{% endblock %}
+{% endblock %} 

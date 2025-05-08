@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+
+{% block title %}Corrections de stock - Gestio Sotech{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h2">Corrections de stock</h1>
+        <button class="btn btn-info" data-bs-toggle="modal" data-bs-target="#nouvelleCorrectionModal">
+            <i class="fas fa-sync"></i> Nouvelle correction
+        </button>
+    </div>
+
+    {% if messages %}
+    <div class="messages mb-4">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Article</th>
+                            <th>Ajustement</th>
+                            <th>Stock après</th>
+                            <th>Motif</th>
+                            <th>Utilisateur</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for correction in corrections %}
+                        <tr>
+                            <td>{{ correction.date|date:"d/m/Y H:i" }}</td>
+                            <td>{{ correction.article.nom }}</td>
+                            <td>
+                                {% if correction.quantite > 0 %}
+                                <span class="text-success">+{{ correction.quantite }}</span>
+                                {% else %}
+                                <span class="text-danger">{{ correction.quantite }}</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ correction.article.quantite_stock }}</td>
+                            <td>{{ correction.motif }}</td>
+                            <td>{{ correction.utilisateur.username }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center">Aucune correction de stock enregistrée</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="nouvelleCorrectionModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Nouvelle correction de stock</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="{% url 'corrections_stock' %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="article" class="form-label">Article</label>
+                        <select class="form-select" id="article" name="article" required>
+                            <option value="">Sélectionner un article</option>
+                            {% for article in articles %}
+                            <option value="{{ article.id }}">{{ article.nom }} (Stock actuel: {{ article.quantite_stock }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="quantite" class="form-label">Ajustement de quantité</label>
+                        <div class="input-group">
+                            <button type="button" class="btn btn-outline-secondary" id="btnMinus">-</button>
+                            <input type="number" class="form-control" id="quantite" name="quantite" required>
+                            <button type="button" class="btn btn-outline-secondary" id="btnPlus">+</button>
+                        </div>
+                        <div class="form-text">Utilisez des valeurs positives pour ajouter du stock, négatives pour en retirer.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="motif" class="form-label">Motif de la correction</label>
+                        <textarea class="form-control" id="motif" name="motif" rows="3" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-info">Enregistrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const btnMinus = document.getElementById('btnMinus');
+    const btnPlus = document.getElementById('btnPlus');
+    const quantiteInput = document.getElementById('quantite');
+
+    btnMinus.addEventListener('click', function() {
+        let val = parseInt(quantiteInput.value || 0);
+        quantiteInput.value = val - 1;
+    });
+
+    btnPlus.addEventListener('click', function() {
+        let val = parseInt(quantiteInput.value || 0);
+        quantiteInput.value = val + 1;
+    });
+});
+</script>
+{% endblock %} 

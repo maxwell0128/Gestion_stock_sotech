@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block title %}Tableau de bord - Gestio Sotech{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h1 class="h2 mb-4">Tableau de bord</h1>
+    
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Utilisateurs</h5>
+                    <p class="card-text">Nombre total d'utilisateurs: {{ utilisateurs_count }}</p>
+                    <a href="{% url 'liste_utilisateurs' %}" class="btn btn-primary">Gérer les utilisateurs</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Rôles</h5>
+                    <p class="card-text">Nombre total de rôles: {{ roles_count }}</p>
+                    <a href="{% url 'liste_roles' %}" class="btn btn-primary">Gérer les rôles</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Activité récente</h5>
+                    <ul class="list-unstyled">
+                        {% for activite in activites_recentes %}
+                        <li class="mb-2">{{ activite.description }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

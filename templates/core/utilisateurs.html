@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+
+{% block title %}Utilisateurs - Gestio Sotech{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h2">Gestion des utilisateurs</h1>
+        <a href="{% url 'creer_utilisateur' %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Nouvel utilisateur
+        </a>
+    </div>
+
+    {% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Nom d'utilisateur</th>
+                            <th>Email</th>
+                            <th>Rôle</th>
+                            <th>Téléphone</th>
+                            <th>Date de création</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for utilisateur in utilisateurs %}
+                        <tr>
+                            <td>{{ utilisateur.username }}</td>
+                            <td>{{ utilisateur.email }}</td>
+                            <td>{{ utilisateur.role.nom|default:"-" }}</td>
+                            <td>{{ utilisateur.telephone|default:"-" }}</td>
+                            <td>{{ utilisateur.date_creation|date:"d/m/Y H:i" }}</td>
+                            <td>
+                                <a href="#" class="btn btn-sm btn-info">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="#" class="btn btn-sm btn-danger">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center">Aucun utilisateur trouvé</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

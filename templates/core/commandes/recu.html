@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+{% block title %}Reçu de la commande #{{ commande.id }}{% endblock %}
+{% block content %}
+<style>
+    .invoice-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 3px solid #4e73df;
+        padding-bottom: 1rem;
+        margin-bottom: 2rem;
+    }
+    .invoice-logo {
+        height: 60px;
+    }
+    .invoice-title {
+        font-size: 2.2rem;
+        font-weight: 700;
+        color: #4e73df;
+        margin-bottom: 0;
+    }
+    .invoice-section-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #4e73df;
+        margin-top: 2rem;
+        margin-bottom: 1rem;
+        letter-spacing: 1px;
+    }
+    .invoice-table th {
+        background: #f4f6fb;
+        color: #4e73df;
+        font-weight: 600;
+        border-top: none;
+    }
+    .invoice-table tr:nth-child(even) {
+        background: #f8f9fc;
+    }
+    .invoice-total-box {
+        background: #f4f6fb;
+        border-left: 5px solid #4e73df;
+        padding: 1.5rem 2rem;
+        margin-top: 2rem;
+        border-radius: 0.5rem;
+        font-size: 1.15rem;
+    }
+    .invoice-total-box h4 {
+        color: #1cc88a;
+        font-weight: 700;
+    }
+    .invoice-footer {
+        margin-top: 3rem;
+        font-size: 0.95rem;
+        color: #858796;
+        text-align: center;
+        border-top: 1px solid #e3e6f0;
+        padding-top: 1rem;
+    }
+</style>
+<div class="container my-5">
+    <div class="card shadow-lg p-4">
+        <div class="invoice-header">
+            <div>
+                <img src="{% static 'img/logo.png' %}" alt="Logo" class="invoice-logo" onerror="this.style.display='none'">
+                <div class="invoice-title">Reçu de commande</div>
+                <div style="color:#858796; font-size:1rem;">N° {{ commande.id }} | {{ commande.date_commande|date:'d/m/Y H:i' }}</div>
+            </div>
+            <div class="text-end">
+                <strong>Votre société</strong><br>
+                123 Avenue de l'Entreprise<br>
+                75000 Paris<br>
+                contact@societe.com<br>
+                +33 1 23 45 67 89
+            </div>
+        </div>
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="invoice-section-title">Fournisseur</div>
+                <strong>{{ commande.fournisseur.nom }}</strong><br>
+                {{ commande.fournisseur.adresse }}<br>
+                {{ commande.fournisseur.telephone }}<br>
+                {{ commande.fournisseur.email }}
+            </div>
+            <div class="col-md-6 text-end">
+                <div class="invoice-section-title">Livraison</div>
+                <strong>Date prévue :</strong> {{ commande.date_livraison_prevue|date:'d/m/Y' }}<br>
+                {% if commande.date_livraison_reelle %}
+                <strong>Date réelle :</strong> {{ commande.date_livraison_reelle|date:'d/m/Y' }}<br>
+                {% endif %}
+            </div>
+        </div>
+        <div class="invoice-section-title">Articles commandés</div>
+        <div class="table-responsive">
+            <table class="table invoice-table">
+                <thead>
+                    <tr>
+                        <th>Article</th>
+                        <th class="text-center">Quantité</th>
+                        <th class="text-end">Prix unitaire</th>
+                        <th class="text-end">Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ligne in commande.lignecommande_set.all %}
+                    <tr>
+                        <td>{{ ligne.article.nom }}</td>
+                        <td class="text-center">{{ ligne.quantite }}</td>
+                        <td class="text-end">{{ ligne.prix_unitaire|floatformat:2 }} €</td>
+                        <td class="text-end">{{ ligne.total|floatformat:2 }} €</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="invoice-section-title">Notes</div>
+                <div style="min-height:2rem;">{{ commande.notes|default:'-' }}</div>
+            </div>
+            <div class="col-md-6">
+                <div class="invoice-total-box text-end">
+                    <div>Total HT : <strong>{{ commande.total_ht|floatformat:2 }} €</strong></div>
+                    <div>TVA (20%) : <strong>{{ commande.total_tva|floatformat:2 }} €</strong></div>
+                    <h4 class="mt-3">Total TTC : {{ commande.total_ttc|floatformat:2 }} €</h4>
+                </div>
+            </div>
+        </div>
+        <div class="text-end mt-4">
+            <a href="{% url 'detail_commande' commande.pk %}" class="btn btn-secondary">Retour au détail</a>
+            <button class="btn btn-primary" onclick="window.print()">Imprimer le reçu</button>
+        </div>
+        <div class="invoice-footer">
+            Merci pour votre confiance.<br>
+            Ce reçu a été généré automatiquement le {{ now|date:'d/m/Y H:i' }}.<br>
+            <span style="font-size:0.9em;">Société fictive - Ne pas utiliser à des fins officielles.</span>
+        </div>
+    </div>
+</div>
+{% endblock %} 

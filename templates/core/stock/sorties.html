@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+
+{% block title %}Sorties de stock - Gestio Sotech{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h2">Sorties de stock</h1>
+        <button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#nouvelleSortieModal">
+            <i class="fas fa-minus"></i> Nouvelle sortie
+        </button>
+    </div>
+
+    {% if messages %}
+    <div class="messages mb-4">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Article</th>
+                            <th>Quantité</th>
+                            <th>Stock après</th>
+                            <th>Motif</th>
+                            <th>Utilisateur</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for sortie in sorties %}
+                        <tr>
+                            <td>{{ sortie.date|date:"d/m/Y H:i" }}</td>
+                            <td>{{ sortie.article.nom }}</td>
+                            <td>{{ sortie.quantite }}</td>
+                            <td>{{ sortie.article.quantite_stock }}</td>
+                            <td>{{ sortie.motif }}</td>
+                            <td>{{ sortie.utilisateur.username }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center">Aucune sortie de stock enregistrée</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="nouvelleSortieModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Nouvelle sortie de stock</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="{% url 'sorties_stock' %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="article" class="form-label">Article</label>
+                        <select class="form-select" id="article" name="article" required>
+                            <option value="">Sélectionner un article</option>
+                            {% for article in articles %}
+                            <option value="{{ article.id }}">{{ article.nom }} (Stock disponible: {{ article.quantite_stock }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="quantite" class="form-label">Quantité</label>
+                        <input type="number" class="form-control" id="quantite" name="quantite" required min="1">
+                        <div class="form-text">La quantité doit être inférieure ou égale au stock disponible.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="motif" class="form-label">Motif</label>
+                        <textarea class="form-control" id="motif" name="motif" rows="3" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-warning">Enregistrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %} 

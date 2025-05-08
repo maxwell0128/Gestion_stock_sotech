@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+
+{% block title %}Gestion des stocks - Gestio Sotech{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h1 class="h2 mb-4">Gestion des stocks</h1>
+    
+    <div class="row">
+        <div class="col-md-6 col-lg-3 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-exchange-alt me-2"></i>
+                        Mouvements de stock
+                    </h5>
+                    <p class="card-text">Voir tous les mouvements de stock</p>
+                    <a href="{% url 'mouvements_stock' %}" class="btn btn-primary">
+                        Accéder aux mouvements
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-arrow-down me-2"></i>
+                        Entrées de stock
+                    </h5>
+                    <p class="card-text">Gérer les entrées de stock</p>
+                    <a href="{% url 'entrees_stock' %}" class="btn btn-success">
+                        Gérer les entrées
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-arrow-up me-2"></i>
+                        Sorties de stock
+                    </h5>
+                    <p class="card-text">Gérer les sorties de stock</p>
+                    <a href="{% url 'sorties_stock' %}" class="btn btn-warning">
+                        Gérer les sorties
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-sync me-2"></i>
+                        Corrections de stock
+                    </h5>
+                    <p class="card-text">Gérer les corrections de stock</p>
+                    <a href="{% url 'corrections_stock' %}" class="btn btn-info">
+                        Gérer les corrections
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

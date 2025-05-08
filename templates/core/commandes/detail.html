@@ -1,0 +1,292 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load commande_filters %}
+
+{% block title %}Détail de la commande {{ commande.id }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .card {
+        border: none;
+        box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+        border-radius: 0.35rem;
+    }
+
+    .card-header {
+        background-color: #f8f9fc;
+        border-bottom: 1px solid #e3e6f0;
+    }
+
+    .status-badge {
+        font-size: 0.875rem;
+        padding: 0.35rem 0.65rem;
+    }
+
+    .table th {
+        font-weight: 600;
+        color: #5a5c69;
+    }
+
+    .table td {
+        vertical-align: middle;
+    }
+
+    .totals-card {
+        background-color: #f8f9fc;
+        border-left: 4px solid #4e73df;
+    }
+
+    .totals-card .card-body {
+        padding: 1.25rem;
+    }
+
+    .totals-card .row {
+        margin-bottom: 0.5rem;
+    }
+
+    .totals-card .row:last-child {
+        margin-bottom: 0;
+        padding-top: 0.5rem;
+        border-top: 1px solid #e3e6f0;
+    }
+
+    .btn {
+        border-radius: 0.35rem;
+        padding: 0.5rem 1rem;
+        font-weight: 500;
+        transition: all 0.2s ease-in-out;
+    }
+
+    .btn-primary {
+        background-color: #4e73df;
+        border-color: #4e73df;
+    }
+
+    .btn-primary:hover {
+        background-color: #2e59d9;
+        border-color: #2653d4;
+    }
+
+    .btn-success {
+        background-color: #1cc88a;
+        border-color: #1cc88a;
+    }
+
+    .btn-success:hover {
+        background-color: #17a673;
+        border-color: #169b6b;
+    }
+
+    .btn-danger {
+        background-color: #e74a3b;
+        border-color: #e74a3b;
+    }
+
+    .btn-danger:hover {
+        background-color: #e02d1b;
+        border-color: #d52a1a;
+    }
+
+    .btn-secondary {
+        background-color: #858796;
+        border-color: #858796;
+    }
+
+    .btn-secondary:hover {
+        background-color: #717384;
+        border-color: #6b6d7d;
+    }
+
+    .page-header {
+        padding-bottom: 1rem;
+        margin-bottom: 2rem;
+        border-bottom: 1px solid #e3e6f0;
+    }
+
+    .info-label {
+        font-weight: 600;
+        color: #5a5c69;
+    }
+
+    .info-value {
+        color: #858796;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="page-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <h1 class="h3 mb-0 text-gray-800">Détail de la commande #{{ commande.id }}</h1>
+            <div>
+                <a href="{% url 'liste_commandes' %}" class="btn btn-secondary">&lt; Retour à la liste</a>
+                {% if commande.statut == 'en_attente' %}
+                <a href="{% url 'confirmer_commande' commande.pk %}" class="btn btn-success">Confirmer</a>
+                <a href="{% url 'annuler_commande' commande.pk %}" class="btn btn-danger" onclick="return confirm('Êtes-vous sûr de vouloir annuler et supprimer cette commande ?');">Annuler</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Informations de la commande -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Informations de la commande</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <p class="mb-1"><span class="info-label">Fournisseur :</span></p>
+                            <p class="info-value">{{ commande.fournisseur.nom }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p class="mb-1"><span class="info-label">Statut :</span></p>
+                            <p>
+                                {% if commande.statut == 'en_attente' %}
+                                <span class="badge bg-warning status-badge">En attente</span>
+                                {% elif commande.statut == 'confirmee' %}
+                                <span class="badge bg-info status-badge">Confirmée</span>
+                                {% elif commande.statut == 'en_cours' %}
+                                <span class="badge bg-primary status-badge">En cours de livraison</span>
+                                {% elif commande.statut == 'livree' %}
+                                <span class="badge bg-success status-badge">Livrée</span>
+                                {% elif commande.statut == 'annulee' %}
+                                <span class="badge bg-danger status-badge">Annulée</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <p class="mb-1"><span class="info-label">Date de commande :</span></p>
+                            <p class="info-value">{{ commande.date_commande|date:"d/m/Y H:i" }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p class="mb-1"><span class="info-label">Date de livraison prévue :</span></p>
+                            <p class="info-value">{{ commande.date_livraison_prevue|date:"d/m/Y" }}</p>
+                        </div>
+                    </div>
+                    {% if commande.date_livraison_reelle %}
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <p class="mb-1"><span class="info-label">Date de livraison réelle :</span></p>
+                            <p class="info-value">{{ commande.date_livraison_reelle|date:"d/m/Y" }}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% if commande.notes %}
+                    <div class="row">
+                        <div class="col-12">
+                            <p class="mb-1"><span class="info-label">Notes :</span></p>
+                            <p class="info-value">{{ commande.notes }}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Articles commandés -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Articles commandés</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Article</th>
+                                    <th class="text-center">Quantité</th>
+                                    <th class="text-end">Prix unitaire</th>
+                                    <th class="text-end">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for ligne in commande.lignes.all %}
+                                <tr>
+                                    <td>{{ ligne.article.nom }}</td>
+                                    <td class="text-center">{{ ligne.quantite }}</td>
+                                    <td class="text-end">{{ ligne.prix_unitaire }} €</td>
+                                    <td class="text-end">{{ ligne.total }} €</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <!-- Totaux -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Totaux</h6>
+                </div>
+                <div class="card-body">
+                    <div class="totals-card">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-6">Total HT:</div>
+                                <div class="col-6 text-end">{{ commande.total_ht }} €</div>
+                            </div>
+                            <div class="row">
+                                <div class="col-6">TVA (20%):</div>
+                                <div class="col-6 text-end">{{ commande.montant_tva }} €</div>
+                            </div>
+                            <div class="row">
+                                <div class="col-6"><strong>Total TTC:</strong></div>
+                                <div class="col-6 text-end"><strong>{{ commande.total_ttc }} €</strong></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Historique des modifications -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Historique</h6>
+                </div>
+                <div class="card-body">
+                    <p class="mb-1"><span class="info-label">Créée le :</span></p>
+                    <p class="info-value">{{ commande.date_creation|date:"d/m/Y H:i" }}</p>
+                    <p class="mb-1"><span class="info-label">Dernière modification :</span></p>
+                    <p class="info-value">{{ commande.date_modification|date:"d/m/Y H:i" }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if facture %}
+    <div class="row mb-4">
+        <div class="col">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">Facture associée</h4>
+                </div>
+                <div class="card-body">
+                    <p><strong>Numéro de facture:</strong> {{ facture.numero }}</p>
+                    <p><strong>Date d'émission:</strong> {{ facture.date_emission|date:"d/m/Y" }}</p>
+                    <p><strong>Date d'échéance:</strong> {{ facture.date_echeance|date:"d/m/Y" }}</p>
+                    <p><strong>Statut:</strong> {{ facture.get_statut_display }}</p>
+                    <a href="{% url 'detail_facture' facture.id %}" class="btn btn-primary">Voir la facture</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        // Initialisation des tooltips Bootstrap
+        $('[data-toggle="tooltip"]').tooltip();
+    });
+</script>
+{% endblock %} 
