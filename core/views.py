@@ -30,17 +30,71 @@ def liste_roles(request):
 @login_required
 def creer_utilisateur(request):
     if request.method == 'POST':
-        # Logique de création d'utilisateur
-        messages.success(request, 'Utilisateur créé avec succès')
-        return redirect('liste_utilisateurs')
-    return render(request, 'core/creer_utilisateur.html')
+        username = request.POST.get('username')
+        email = request.POST.get('email')
+        password = request.POST.get('password')
+        role_id = request.POST.get('role')
+        telephone = request.POST.get('telephone')
+
+        try:
+            # Vérifier si l'utilisateur existe déjà
+            if Utilisateur.objects.filter(username=username).exists():
+                messages.error(request, 'Ce nom d\'utilisateur est déjà pris.')
+                return redirect('creer_utilisateur')
+
+            # Créer le nouvel utilisateur
+            utilisateur = Utilisateur.objects.create_user(
+                username=username,
+                email=email,
+                password=password,
+                telephone=telephone
+            )
+
+            # Assigner le rôle si spécifié
+            if role_id:
+                try:
+                    role = Role.objects.get(id=role_id)
+                    utilisateur.role = role
+                    utilisateur.save()
+                except Role.DoesNotExist:
+                    messages.warning(request, 'Le rôle spécifié n\'existe pas.')
+
+            messages.success(request, 'Utilisateur créé avec succès')
+            return redirect('liste_utilisateurs')
+        except Exception as e:
+            messages.error(request, f'Erreur lors de la création de l\'utilisateur : {str(e)}')
+            return redirect('creer_utilisateur')
+
+    # Récupérer la liste des rôles pour le formulaire
+    roles = Role.objects.all()
+    return render(request, 'core/creer_utilisateur.html', {'roles': roles})
 
 @login_required
 def creer_role(request):
     if request.method == 'POST':
-        # Logique de création de rôle
-        messages.success(request, 'Rôle créé avec succès')
-        return redirect('liste_roles')
+        nom = request.POST.get('nom')
+        description = request.POST.get('description')
+        permissions = request.POST.getlist('permissions')  # Récupère la liste des permissions cochées
+
+        try:
+            # Vérifier si le rôle existe déjà
+            if Role.objects.filter(nom=nom).exists():
+                messages.error(request, 'Ce nom de rôle est déjà pris.')
+                return redirect('creer_role')
+
+            # Créer le nouveau rôle
+            role = Role.objects.create(
+                nom=nom,
+                description=description,
+                permissions={'permissions': permissions}  # Stocke les permissions dans le champ JSON
+            )
+
+            messages.success(request, 'Rôle créé avec succès')
+            return redirect('liste_roles')
+        except Exception as e:
+            messages.error(request, f'Erreur lors de la création du rôle : {str(e)}')
+            return redirect('creer_role')
+
     return render(request, 'core/creer_role.html')
 
 # Nouvelles vues pour les catégories
